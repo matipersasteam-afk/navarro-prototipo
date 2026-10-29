@@ -173,6 +173,7 @@ button:focus-visible, .tap:focus-visible { outline: 2px solid var(--accent-text)
 .tabbar { position: absolute; left: 16px; right: 16px; bottom: 14px; height: 64px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-raised); border: 1px solid transparent; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
 :root[data-theme="dark"] .tabbar { border-color: var(--line); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tabbar { border-color: var(--line); } }
+.tabbar[hidden] { display: none; }
 .tabbar button { border: 0; background: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font: 600 12px var(--ui); color: var(--text-subtle); cursor: pointer; }
 .tabbar button[aria-current="true"] { color: var(--accent-text); }
 .tabbar button::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--brand-green); transform: scale(0); transition: transform 240ms cubic-bezier(.34,1.56,.64,1); margin-top: 2px; }
@@ -724,7 +725,182 @@ document.addEventListener("click", e => {
       <div style="margin-top:20px"><button class="btn primary" data-close-toast="Paquete de 8 clases activado.">Registrar y activar</button></div>`);
 });
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target.matches("[tabindex='0']")) { e.preventDefault(); e.target.click(); } if (e.key === "Escape") closeSheet(); });
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
-new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => render());
+new MutationObserver(() => render()).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+// ---------- Ronda 2 · 14 funciones extra (docs/EXTRAS.md «Ronda 2») ----------
+// Datos de ejemplo. La cuenta bancaria es FALSA (CLABE de ceros, «NO DEPOSITAR»).
+const R2_SUB = ["signup", "terms", "renew", "freeze", "privates", "privreq", "checkin", "rate", "qr", "cprivates", "cratings", "transfers", "pricing", "coachpay", "cash", "ratings", "export", "rain"];
+SCREENS.alumno.push(["signup", "Crear cuenta · reglamento"], ["terms", "Reglamento nuevo (bloqueo)"], ["checkin", "Check-in con QR"], ["rate", "Calificar la clase"], ["freeze", "Congelar paquete"], ["privates", "Clases particulares"], ["privreq", "Pedir particular"], ["renew", "Renovar por transferencia"]);
+SCREENS.coach.push(["qr", "QR del día"], ["cprivates", "Mis particulares"], ["cratings", "Mis calificaciones"]);
+SCREENS.admin.push(["transfers", "Cobros por transferencia"], ["rain", "Cierre por lluvia"], ["coachpay", "Pago a entrenadores"], ["cash", "Corte de caja"], ["pricing", "Precios y promociones"], ["ratings", "Calificaciones"], ["export", "Exportar a Excel"]);
+Object.assign(PARENT, { renew: "profile", freeze: "profile", privates: "profile", privreq: "privates", checkin: "classes", rate: "classes", transfers: "payments", pricing: "payments", coachpay: "payments", cash: "payments", ratings: "payments", export: "payments", rain: "aagenda", qr: "agenda", cprivates: "agenda", cratings: "agenda" });
+
+Object.assign(I, {
+  qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 17h4v4h-4"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  snow: '<path d="M12 2v20M4 6l16 12M20 6L4 18M9 3l3 3 3-3M9 21l3-3 3 3"/>', bank: '<path d="M3 10h18L12 4zM5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>',
+  rain: '<path d="M7 15a5 5 0 1 1 1-9.9A6 6 0 0 1 19 9a4 4 0 0 1-1 7.9H7M8 19l-1 2M12 19l-1 2M16 19l-1 2"/>', file: '<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 14h6M9 17h6"/>',
+  map: '<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>', up: '<path d="M12 16V4M7 9l5-5 5 5M4 20h16"/>',
+});
+
+const field = (label, value = "", ph = "") => `<label class="stack" style="gap:8px"><span style="font:600 14px var(--ui)">${esc(label)}</span><input value="${esc(value)}" placeholder="${esc(ph)}" style="height:52px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 16px;font:400 16px var(--ui)"></label>`;
+const linkRows = rows => `<div class="card" style="padding:4px 16px">${rows.map(([k, i, n, d], j) => `${j ? '<div class="divider"></div>' : ""}<div class="row tap" tabindex="0" data-go="${k}" style="padding:8px 0"><span style="width:36px;height:36px;border-radius:50%;background:var(--selected);color:var(--accent-text);display:grid;place-items:center">${ic(i, 20)}</span><div style="flex:1"><b>${n}</b><div class="meta">${d}</div></div><span class="chev">${ic("chev", 20)}</span></div>`).join("")}</div>`;
+const copyRow = (k, v, big) => `<div class="row" style="padding:8px 0"><div style="flex:1;min-width:0"><div class="meta">${k}</div><b class="${big ? "num" : ""}" style="${big ? "font-size:22px" : ""}">${esc(v)}</b></div><button class="icon-btn" aria-label="Copiar ${k}" data-copy="${esc(v)}" data-toast="${k} copiado.">${ic("copy", 20)}</button></div>`;
+const R2TERMS = `1. Llega 10 minutos antes de tu clase y usa calzado de pádel.<br>2. Cancela con 6 horas de anticipación para que la clase regrese a tu paquete.<br>3. Los paquetes vencen un mes después de activarse.<br><br><b>Deslinde de responsabilidad.</b> Practico pádel bajo mi propio riesgo y declaro estar en condiciones de salud para hacer ejercicio.`;
+const termsBox = h => `<div class="card" style="margin-top:16px"><div class="row"><b style="flex:1">Reglamento y deslinde</b><span class="meta">Versión 2</span></div><div class="meta" style="margin-top:8px;max-height:${h}px;overflow:auto;font-size:15px;line-height:22px;color:var(--text-muted)">${R2TERMS}</div></div>
+  <button class="row tap" data-accept style="gap:12px;margin-top:8px;min-height:48px;background:none;border:0;color:var(--text);font:400 16px var(--ui);text-align:left;width:100%"><span class="sw" role="checkbox" aria-checked="${!!S.accept}" style="flex:none"></span>Leí y acepto el reglamento y el deslinde de responsabilidad.</button>`;
+
+// ---------- Alumno ----------
+V.signup = () => `${topbar("Crear cuenta", "home")}<h1 class="title" style="margin-top:4px">Te damos la bienvenida</h1><p class="sub">Con tu cuenta reservas clases, ves tu saldo y renuevas tu paquete.</p>
+  <div class="stack" style="margin-top:16px">${field("Nombre completo", "", "Ana López")}${field("Teléfono (WhatsApp)", "", "55 1234 5678")}${field("Correo electrónico", "", "tu@correo.com")}${field("Contraseña", "", "Mínimo 6 caracteres")}</div>
+  ${termsBox(150)}<div style="margin-top:20px"><button class="btn primary" ${S.accept ? 'data-toast="Cuenta creada. Se guardó tu aceptación del reglamento (versión 2)."' : "disabled"}>Crear cuenta</button></div>`;
+V.terms = () => `<h1 class="title" style="margin-top:24px">Actualizamos el reglamento</h1><p class="sub">Para seguir reservando, léelo y acéptalo. Solo te lo pedimos cuando cambia.</p>${termsBox(260)}
+  <div class="stack" style="margin-top:20px"><button class="btn primary" ${S.accept ? 'data-go="home"' : "disabled"}>Aceptar y continuar</button><button class="btn tertiary" data-toast="Sesión cerrada.">Cerrar sesión</button></div>`;
+V.checkin = () => `${topbar("Check-in", "classes")}<p class="sub">Escanea el QR que está en la sede.</p>
+  <div class="card" style="margin-top:12px;aspect-ratio:1;display:grid;place-items:center;background:#0b0f1a;color:#fff"><div style="text-align:center">${ic("qr", 72)}<p style="margin:12px 0 0;opacity:.8">Apunta la cámara al código de la sede</p></div></div>
+  <div class="title">¿No funciona la cámara?</div>${field("Código de 6 caracteres (abajo del QR)", "", "K7Q2MX")}
+  <div style="margin-top:16px"><button class="btn primary" data-toast="¡Listo! Tu asistencia quedó registrada.">Registrar asistencia</button></div>
+  <p class="meta" style="text-align:center;margin-top:12px">Abre 20 min antes de tu clase y cierra 15 min después de que empieza.</p>`;
+V.rate = () => { const st = S.stars ?? 0; const chips = st >= 4 ? [["¿Qué fue lo mejor?", ["Explicación", "Ejercicios", "Energía", "Puntualidad", "Atención personal", "Ambiente"]]] : st ? [["¿Qué podemos mejorar?", ["Explicación", "Ejercicios", "Puntualidad", "Atención personal", "Organización", "Intensidad"]]] : [];
+  return `${topbar("Calificar la clase", "classes")}<h1 class="title" style="margin-top:4px">¿Qué tal tu clase?</h1><p class="sub">Martes 27 oct · 4:00 p. m. · Valle. Es anónima: tu entrenador solo ve promedios del mes.</p>
+  <div class="row" style="justify-content:center;gap:4px;margin:16px 0">${[1, 2, 3, 4, 5].map(i => `<button class="icon-btn" data-star="${i}" aria-label="${i} estrellas" style="width:52px;height:52px;color:${i <= st ? "var(--accent-text)" : "var(--text-subtle)"}">${ic("star", 36, i <= st ? 'fill="currentColor"' : "")}</button>`).join("")}</div>
+  ${chips.map(([t, cs]) => `<div class="title">${t}</div><div class="chips">${cs.map(c => `<button class="chip" data-pick aria-pressed="false">${c}</button>`).join("")}</div>`).join("")}
+  <div style="margin-top:16px">${field("Comentario (opcional)")}</div><div style="margin-top:20px"><button class="btn primary" ${st ? 'data-go="classes" data-toast="¡Gracias! Nos ayuda a mejorar."' : "disabled"}>Enviar</button></div>`; };
+V.freeze = () => `${topbar("Congelar paquete", "profile")}<p class="sub">¿Te lesionaste o sales de viaje? Pausa tu paquete de 7 a 30 días: la vigencia se extiende los días que esté congelado. Una vez por paquete.</p>
+  <div class="card" style="margin-top:16px"><b style="font:700 18px var(--ui)">Paquete de 8 clases</b><div class="meta">3 clases disponibles · vence el 18 nov 2026</div>
+  <div class="title">Motivo</div><div class="chips">${["Lesión", "Viaje", "Salud", "Trabajo", "Otro"].map((m, i) => `<button class="chip" data-pick aria-pressed="${i === 0}">${m}</button>`).join("")}</div>
+  <div class="title">¿Cuántos días?</div><div class="seg">${[7, 14, 21, 30].map(d => `<button data-fd="${d}" aria-pressed="${(S.fd ?? 14) === d}">${d} días</button>`).join("")}</div>
+  <div class="notice b-info" style="margin-top:16px">Si se aprueba hoy: congelado del 29 oct al ${({ 7: "4 nov", 14: "11 nov", 21: "18 nov", 30: "27 nov" })[S.fd ?? 14]} y tu paquete vencería el ${({ 7: "25 nov", 14: "2 dic", 21: "9 dic", 30: "18 dic" })[S.fd ?? 14]}. Las clases que tengas en esas fechas se cancelan y regresan a tu paquete.</div>
+  <div style="margin-top:16px"><button class="btn primary" data-go="profile" data-toast="Solicitud enviada. Te avisamos cuando responda la academia.">Enviar solicitud</button></div></div>`;
+const lesson = (who, when, price, st, cls, extra = "") => `<div class="card" style="margin-bottom:8px"><div class="row"><div style="flex:1"><b style="font:700 18px var(--ui)">${when}</b><div class="meta">${who} · Valle · 60 min · ${price}</div></div>${badge(cls, st)}</div>${extra}</div>`;
+V.privates = () => `${topbar("Clases particulares", "profile")}<p class="sub">Una clase solo para ti con el entrenador que elijas. No usa tu paquete: se paga aparte.</p>
+  <div style="margin-top:16px"><button class="btn primary" data-go="privreq">${ic("plus", 20)} Pedir clase particular</button></div><div class="title">Mis particulares</div>
+  ${lesson("Marta Salinas", "Lunes 2 nov · 12:30 p. m.", "$600", "Confirmada", "b-paid", '<p class="meta" style="margin:8px 0 0">Se paga aparte en la academia (efectivo o transferencia).</p>')}${lesson("Marta Salinas", "Miércoles 4 nov · 1:00 p. m.", "$600", "Por confirmar", "b-pend")}`;
+V.privreq = () => `${topbar("Pedir particular", "privates")}<div class="title" style="margin-top:4px">Entrenador</div>
+  ${[["Marta Salinas", "60 min $600 · 90 min $850", true], ["Iván Treviño", "60 min $550", false]].map(([n, p, s]) => `<div class="card ${s ? "sel" : ""}" style="margin-bottom:8px"><div class="row"><span class="av">${initials(n)}</span><div style="flex:1"><b>${n}</b><div class="meta">${p}</div></div></div></div>`).join("")}
+  <div class="title">Día</div><div class="days">${[["Lun", 2], ["Mié", 4], ["Lun", 9]].map(([d, n], i) => `<button class="day" aria-pressed="${i === 0}"><small>${d}</small><b>${n}</b></button>`).join("")}</div>
+  <div class="title">Duración</div><div class="seg"><button aria-pressed="true">60 min · $600</button><button>90 min · $850</button></div>
+  <div class="title">Hora</div><div class="chips">${["11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00"].map((h, i) => `<button class="chip" data-pick aria-pressed="${i === 3}">${hh(h)}</button>`).join("")}</div>
+  <p class="sub" style="margin-top:16px">Marta Salinas · lunes 2 nov a las 12:30 p. m. · 60 min · $600. El entrenador la confirma y se paga aparte; no usa tu paquete.</p>
+  <div style="margin-top:12px"><button class="btn primary" data-go="privates" data-toast="Solicitud enviada. Te avisamos cuando la confirme.">Enviar solicitud</button></div>`;
+V.renew = () => { const step = S.rstep ?? 0;
+  if (!step) return `${topbar("Renovar por transferencia", "profile")}<p class="sub">Transfiere desde tu banco a la cuenta de la academia, sin comisiones. Tu paquete se activa cuando confirmemos el depósito.</p>
+  <div class="title">Elige tu paquete</div>${[["4 clases", "$1,200"], ["8 clases", "$2,100", 1], ["12 clases", "$2,900"], ["Promo Buen Fin · 10 clases", "$2,400", 0, 1]].map(([n, p, s, promo]) => `<div class="card ${s ? "sel" : ""}" style="margin-bottom:8px"><div class="row"><b style="flex:1">${n}</b>${promo ? badge("b-info", "Promo") + " " : ""}<b class="num">${p}</b></div></div>`).join("")}
+  <div class="row" style="gap:8px;align-items:flex-end;margin-top:8px"><div style="flex:1">${field("Código de descuento (opcional)", "BIENVENIDA")}</div><button class="btn secondary small inline" style="height:52px">Quitar</button></div>
+  <div class="card" style="margin-top:16px"><div class="row"><span style="flex:1;color:var(--text-muted)">Paquete de 8 clases</span><b class="num">$2,100</b></div><div class="row"><span style="flex:1;color:var(--text-muted)">Descuento BIENVENIDA</span><b class="num">− $210</b></div><div class="divider"></div><div class="row"><b style="flex:1">Total</b><b class="num" style="font-size:26px">$1,890</b></div></div>
+  <div style="margin-top:16px"><button class="btn primary" data-rstep="1">Continuar · $1,890</button></div>`;
+  const st = step === 1 ? ["b-info", "Falta tu comprobante"] : ["b-pend", "Por confirmar"];
+  return `${topbar("Renovar por transferencia", "profile")}<div class="row" style="margin-top:4px"><b style="flex:1;font:700 18px var(--ui)">Paquete de 8 clases</b>${badge(...st)}</div>
+  ${step === 2 ? '<div class="notice b-info" style="margin-top:12px">Recibimos tu comprobante. Lo revisamos a mano en el banco y activamos tu paquete; te llega un aviso.</div>' : ""}
+  <div class="card" style="margin-top:12px;padding:4px 16px">${copyRow("CLABE", "000 000 0000 0000 0000")}<div class="divider"></div>${copyRow("Titular", "ACADEMIA EJEMPLO — NO DEPOSITAR")}<div class="divider"></div>${copyRow("Banco", "Banco de Ejemplo")}<div class="divider"></div>${copyRow("Monto", "$1,890.00", 1)}<div class="divider"></div>${copyRow("Concepto / referencia", "NAV-K7Q2MX", 1)}</div>
+  <p class="meta" style="margin-top:8px">Escribe la referencia en el concepto: así sabemos que el depósito es tuyo. Transfiere el monto exacto.</p>
+  <div class="stack" style="margin-top:16px"><button class="btn ${step === 1 ? "primary" : "secondary"}" data-rstep="2">${ic("up", 20)} ${step === 1 ? "Subir comprobante" : "Subir otro comprobante"}</button><p class="meta" style="text-align:center">Imagen o PDF de hasta 10 MB.</p>
+  <button class="btn tertiary" data-rstep="0" data-toast="Renovación cancelada.">Cancelar renovación</button></div>`; };
+
+// ---------- Entrenador ----------
+/** QR de ejemplo (decorativo): 3 cuadros de posición + módulos pseudoaleatorios. */
+const qrSvg = () => {
+  let out = "";
+  const finder = (x, y, ox, oy) => { const a = x - ox, b = y - oy; if (a < 0 || b < 0 || a > 6 || b > 6) return null; return a === 0 || a === 6 || b === 0 || b === 6 || (a >= 2 && a <= 4 && b >= 2 && b <= 4); };
+  for (let y = 0; y < 21; y++) for (let x = 0; x < 21; x++) {
+    const f = finder(x, y, 0, 0) ?? finder(x, y, 14, 0) ?? finder(x, y, 0, 14);
+    const sep = (x < 8 && y < 8) || (x > 12 && y < 8) || (x < 8 && y > 12);
+    const on = f ?? (!sep && ((x * 7 + y * 13 + x * y) % 5 < 2));
+    if (on) out += `<rect x="${x}" y="${y}" width="1" height="1" fill="#000"/>`;
+  }
+  return out;
+};
+V.qr = () => `${topbar("QR del día", "agenda")}<div class="seg" style="margin-top:4px"><button aria-pressed="true">Valle Padel Park</button><button>Stanley Padel Club</button></div>
+  <div class="card" style="margin-top:16px;background:#fff;aspect-ratio:1;display:grid;place-items:center"><svg viewBox="0 0 21 21" style="width:86%;height:86%" shape-rendering="crispEdges" aria-label="QR de check-in de hoy">${qrSvg()}</svg></div>
+  <p class="meta" style="text-align:center;margin-top:16px">Código para teclear</p><p class="num" style="text-align:center;font-size:30px;letter-spacing:6px;margin:4px 0">K 7 Q 2 M X</p>
+  <div class="notice b-info" style="margin-top:12px">Vale solo hoy (jueves 29 oct). Cada alumno puede hacer check-in de 20 min antes a 15 min después del inicio de su turno.</div>`;
+V.cprivates = () => `${topbar("Clases particulares", "agenda")}<div class="card"><div class="row"><div style="flex:1"><b>Doy clases particulares</b><div class="meta">Los alumnos ven tu precio y tus horarios.</div></div><button class="sw" role="switch" aria-checked="true" data-sw aria-label="Doy clases particulares"></button></div>
+  <div class="row" style="gap:12px;margin-top:8px"><div style="flex:1">${field("Precio 60 min", "600")}</div><div style="flex:1">${field("Precio 90 min", "850")}</div></div>
+  <div class="title">Disponibilidad</div>${["Lun · 12:00 p. m.–3:00 p. m.", "Mié · 12:00 p. m.–3:00 p. m."].map(d => `<div class="row" style="padding:6px 0"><div style="flex:1"><b>${d}</b><div class="meta">Valle Padel Park</div></div><button class="icon-btn" aria-label="Quitar horario">${ic("del", 20)}</button></div>`).join("")}
+  <div class="stack" style="margin-top:8px"><button class="btn tertiary small">+ Agregar horario</button><button class="btn secondary" data-toast="Oferta guardada.">Guardar oferta</button></div></div>
+  <div class="title">Solicitudes</div>${lesson("Ana López", "Miércoles 4 nov · 1:00 p. m.", "$600", "Por confirmar", "b-pend", `<div class="row" style="gap:8px;margin-top:12px"><button class="btn tertiary small" data-toast="Le avisamos a la alumna.">Rechazar</button><button class="btn primary small" data-toast="Clase confirmada. Si cae en un turno, se apartó una cancha.">Aceptar</button></div>`)}
+  <div class="title">Próximas</div>${lesson("Ana López", "Lunes 2 nov · 12:30 p. m.", "$600", "Confirmada", "b-paid")}`;
+V.cratings = () => `${topbar("Tus calificaciones", "agenda")}<p class="sub">Son anónimas. Se publican al cerrar cada mes y solo si hay 5 respuestas o más.</p>
+  <div class="chips" style="margin-top:12px">${["Septiembre 2026", "Agosto 2026", "Julio 2026"].map((m, i) => `<button class="chip" aria-pressed="${i === 0}">${m}</button>`).join("")}</div>
+  <div class="card" style="margin-top:16px"><div class="row" style="align-items:flex-end"><b class="num" style="font-size:44px">4.7</b><span style="color:var(--accent-text);margin:0 0 8px 6px">${ic("star", 26, 'fill="currentColor"')}</span><span class="meta" style="flex:1;text-align:right">23 respuestas</span></div>
+  <div class="title">Lo que más gusta</div><p style="margin:0">Energía · Explicación</p><div class="title">Para mejorar</div><p style="margin:0">Puntualidad</p></div>`;
+
+// ---------- Admin ----------
+const tCard = (n, st, cls, proof) => `<div class="card" style="margin-bottom:8px"><div class="row"><b style="flex:1;font:700 18px var(--ui)">${n}</b>${badge(cls, st)}</div><div class="meta">Paquete de 8 clases · Valle · 29 oct 2026</div>
+  <div class="row" style="margin-top:12px"><div style="flex:1"><div class="meta">Referencia</div><b>NAV-K7Q2MX</b></div><div style="text-align:right"><div class="meta">Monto</div><b class="num" style="font-size:26px">$1,890</b></div></div><div class="meta">Con código BIENVENIDA (− $210)</div>
+  ${proof ? `<button class="btn secondary small" style="margin-top:12px" data-toast="Abriendo comprobante…">${ic("file", 18)} Ver comprobante</button>` : '<p class="sub" style="margin:12px 0 0">Aún no sube comprobante.</p>'}
+  <div class="row" style="gap:8px;margin-top:8px"><button class="btn tertiary small" data-toast="Le avisamos para que revise o suba otro comprobante.">No llegó</button><button class="btn ${proof ? "primary" : "secondary"} small" data-toast="Pago confirmado. Paquete activado.">Confirmar</button></div></div>`;
+V.transfers = () => `${topbar("Cobros por transferencia", "payments")}<p class="sub">Revisa en tu banco la referencia y el monto. «Confirmar» activa el paquete con el mismo flujo del efectivo.</p><div style="margin-top:16px">${tCard("Sofía Pérez", "Por confirmar", "b-pend", 1)}${tCard("Diego Mora", "Sin comprobante", "b-info", 0)}</div>
+  <div class="title">Congelamientos por aprobar</div><div class="card"><b style="font:700 18px var(--ui)">Luis Garza</b><div class="meta">Paquete de 12 clases · 14 días · Lesión</div><p style="margin:8px 0 0;color:var(--text-muted)">«Esguince de tobillo, me dieron 2 semanas de reposo.»</p>
+  <p style="margin:8px 0 0">Si apruebas hoy<br>Congelado: 29 oct – 11 nov<br>Nuevo vencimiento: 26 nov (era 12 nov)</p><div class="row" style="gap:8px;margin-top:12px"><button class="btn tertiary small" data-toast="Solicitud rechazada.">Rechazar</button><button class="btn primary small" data-toast="Paquete congelado.">Aprobar</button></div></div>
+  <div class="title">Particulares por cobrar</div>${lesson("Ana López con Marta Salinas", "Lunes 2 nov · 12:30 p. m.", "$600", "Confirmada", "b-paid", `<div class="row" style="gap:8px;margin-top:12px"><button class="btn secondary small" data-toast="Pago registrado.">Efectivo</button><button class="btn secondary small" data-toast="Pago registrado.">Transferencia</button></div>`)}`;
+V.rain = () => `${topbar("Cierre por lluvia", "aagenda")}<p class="sub">Valle Padel Park · jueves 29 oct</p><div class="title">Turnos</div>
+  <div class="chips">${SLOTS.map(s => `<button class="chip" data-pick aria-pressed="${s.id === "t5"}">${hh(s.s)} · ${s.c[0] + s.c[1]}</button>`).join("")}</div>
+  <div style="margin-top:16px">${field("Motivo (lo verán los alumnos)", "Lluvia")}</div>
+  <div class="notice b-pend" style="margin-top:16px">6 alumnos reciben su clase de vuelta aunque falten menos de 6 h, y un aviso. Esas clases no cuentan para el pago a entrenadores. Queda en la bitácora.</div>
+  <div style="margin-top:20px"><button class="btn danger" data-go="aagenda" data-toast="Turnos cancelados. Avisamos a los alumnos.">Cancelar turnos</button></div>`;
+const period = () => `<div class="seg">${["Semana", "Quincena", "Mes"].map((p, i) => `<button aria-pressed="${i === 1}">${p}</button>`).join("")}</div><div class="row" style="margin-top:12px"><button class="icon-btn" aria-label="Periodo anterior">${ic("back", 20)}</button><b style="flex:1;text-align:center;font:700 18px var(--ui)">16 – 31 oct 2026</b><button class="icon-btn" aria-label="Periodo siguiente" disabled>${ic("chev", 20)}</button></div>`;
+V.coachpay = () => `${topbar("Pago a entrenadores", "payments")}${period()}<p class="meta" style="margin-top:8px">Cuentan los turnos asignados con al menos 1 alumno presente (sin cierres por lluvia) y las particulares dadas.</p>
+  ${[["Marta Salinas", "18 clases × $250 + 3 particulares × $400", "Valle: 12 clases · 3 particulares<br>Stanley: 6 clases · 0 particulares", "$5,700", 0], ["Iván Treviño", "9 clases × $220", "Stanley: 9 clases · 0 particulares", "$1,980", 1]].map(([n, f, s, a, paid]) => `<div class="card" style="margin-top:12px"><b style="font:700 18px var(--ui)">${n}</b><p style="margin:4px 0;color:var(--text-muted)">${f}</p><div class="meta">${s}</div>
+  <div class="row" style="margin-top:12px"><b class="num" style="flex:1;font-size:26px">${a}</b>${paid ? badge("b-paid", "Pagado " + a) : `<button class="btn primary small inline" data-toast="Pago registrado.">Marcar como pagado</button>`}</div></div>`).join("")}
+  <div class="card" style="margin-top:12px"><div class="row"><b style="flex:1">Total del periodo</b><b class="num" style="font-size:26px">$7,680</b></div></div>
+  <div class="title">Entrenador de cada turno</div><div class="card">${SLOTS.map(s => `<div class="row" style="padding:6px 0"><span style="flex:1">${hh(s.s)} – ${hh(s.e)}</span><b style="color:var(--accent-text)">Marta</b></div>`).join("")}</div>`;
+V.cash = () => `${topbar("Corte de caja", "payments")}<div class="seg"><button aria-pressed="true">Valle Padel Park</button><button>Stanley Padel Club</button></div>
+  <div class="days" style="margin-top:12px">${[["Hoy", 29], ["Mié", 28], ["Mar", 27], ["Lun", 26]].map(([d, n], i) => `<button class="day" aria-pressed="${i === 0}"><small>${d}</small><b>${n}</b></button>`).join("")}</div>
+  <div class="kpis" style="margin-top:12px"><div class="kpi"><b>$2,200</b><small>Efectivo</small></div><div class="kpi"><b>$1,890</b><small>Transferencias</small></div><div class="kpi"><b>$2,200</b><small>Esperado en caja</small></div></div>
+  <div class="title">Efectivo</div><div class="card" style="padding:4px 16px">${[["Ana López", "Paquete · 11:30 a. m. · cobró Paola", "$1,600"], ["Luis Garza", "Particular · 12:10 p. m. · cobró Paola", "$600"]].map(([n, m, a], i) => `${i ? '<div class="divider"></div>' : ""}<div class="row" style="padding:8px 0"><div style="flex:1"><b>${n}</b><div class="meta">${m}</div></div><b class="num">${a}</b></div>`).join("")}</div>
+  <div class="title">Transferencias confirmadas</div><div class="card"><div class="row"><div style="flex:1"><b>Sofía Pérez</b><div class="meta">Paquete · cobró Rodrigo · NAV-K7Q2MX</div></div><b class="num">$1,890</b></div></div>
+  <div class="title">Cierre</div><div class="card">${field("Efectivo contado", "2,150")}<p style="margin:8px 0 0;font-weight:600;color:var(--pend-fg)">Faltan $50.</p><div style="margin-top:12px">${field("Nota (opcional)")}</div><div style="margin-top:16px"><button class="btn primary" data-toast="Corte cerrado. Diferencia: −$50.">Cerrar corte</button></div></div>`;
+V.pricing = () => `${topbar("Precios y promociones", "payments")}<div class="title" style="margin-top:4px">Precio por sede</div>
+  ${[["Valle Padel Park", ["1200", "2100", "2900"]], ["Stanley Padel Club", ["1250", "2150", "2950"]]].map(([n, p]) => `<div class="card" style="margin-bottom:8px"><b style="font:700 18px var(--ui)">${n}</b><div class="row" style="gap:8px;margin-top:8px">${[4, 8, 12].map((s, i) => `<div style="flex:1">${field(s + " clases", "$" + p[i])}</div>`).join("")}</div><div style="margin-top:12px"><button class="btn secondary small" data-toast="Precios guardados.">Guardar precios</button></div></div>`).join("")}
+  <div class="title">Paquetes especiales <button class="btn secondary small inline">+ Nuevo</button></div><div class="card"><div class="row"><div style="flex:1"><b>Promo Buen Fin · 10 clases</b><div class="meta">29 oct – 18 nov · Valle, Stanley</div></div><b class="num">$2,400</b></div></div>
+  <div class="title">Códigos de descuento <button class="btn secondary small inline">+ Nuevo</button></div><div class="card" style="padding:4px 16px">${[["BIENVENIDA", "19 oct – 28 dic · 7 de 50 usos", "− 10 %"], ["AMIGO100", "19 oct – 28 dic · 3 usos", "− $100"]].map(([c, m, v], i) => `${i ? '<div class="divider"></div>' : ""}<div class="row" style="padding:8px 0"><div style="flex:1"><b>${c}</b><div class="meta">${m}</div></div><b class="num">${v}</b></div>`).join("")}</div>`;
+V.ratings = () => `${topbar("Calificaciones", "payments")}${period()}
+  <div class="card" style="margin-top:12px"><div class="row"><span class="meta" style="flex:1">42 respuestas</span><b class="num">4.6</b><span style="color:var(--accent-text);margin-left:4px">${ic("star", 22, 'fill="currentColor"')}</span></div>
+  ${[[5, 29], [4, 9], [3, 3], [2, 1], [1, 0]].map(([s, n]) => `<div class="row" style="gap:8px;margin-top:6px"><span class="meta" style="width:28px">${s}★</span><div class="prog" style="flex:1"><i style="width:${n / 29 * 100}%"></i></div><span class="meta" style="width:24px;text-align:right">${n}</span></div>`).join("")}
+  <p style="margin:12px 0 0"><b>Lo mejor:</b> Energía (21) · Explicación (17)<br><b>A mejorar:</b> Puntualidad (6)</p></div>
+  <div class="title">Por entrenador</div>${[["Marta Salinas", "30 respuestas · Energía", "4.8"], ["Iván Treviño", "12 respuestas · Explicación", "4.1"]].map(([n, m, a]) => `<div class="card" style="margin-bottom:8px"><div class="row"><div style="flex:1"><b>${n}</b><div class="meta">${m}</div></div><b class="num">${a}</b><span style="color:var(--accent-text);margin-left:4px">${ic("star", 20, 'fill="currentColor"')}</span></div></div>`).join("")}
+  <div class="title">Comentarios recientes</div>${[["«La mejor clase del mes, muy buen ritmo.»", "5 ★ · 28 oct · Valle · Marta Salinas"], ["«Empezamos 10 minutos tarde.»", "3 ★ · 26 oct · Stanley · Iván Treviño"]].map(([c, m]) => `<div class="card" style="margin-bottom:8px"><p style="margin:0">${c}</p><div class="meta" style="margin-top:4px">${m}</div></div>`).join("")}`;
+V.export = () => `${topbar("Exportar a Excel", "payments")}<div class="title" style="margin-top:4px">Qué</div>
+  ${[["group", "Alumnos"], ["pay", "Pagos", 1], ["check", "Asistencias"], ["user", "Pago a entrenadores"], ["list", "Cortes de caja"]].map(([i, n, s]) => `<div class="card ${s ? "sel" : ""}" style="margin-bottom:8px"><div class="row"><span style="color:${s ? "var(--accent-text)" : "var(--text-muted)"}">${ic(i, 22)}</span><b style="flex:1;margin-left:12px">${n}</b>${s ? `<span style="color:var(--accent-text)">${ic("check", 22)}</span>` : ""}</div></div>`).join("")}
+  <div class="title">Periodo</div>${period()}<div class="title">Sede</div><div class="chips"><button class="chip" aria-pressed="true">Todas</button><button class="chip">Valle</button><button class="chip">Stanley</button></div>
+  <div style="margin-top:20px"><button class="btn primary" data-toast="navarro-pagos-2026-10-16_2026-10-31.xlsx listo para guardar o enviar.">${ic("file", 20)} Descargar .xlsx</button></div><p class="meta" style="text-align:center;margin-top:8px">Montos en pesos y fechas en hora de México.</p>`;
+
+// ---------- Enlaces desde las pantallas que ya existían ----------
+const _profile = V.profile, _payments = V.payments, _settings = V.settings, _agenda = V.agenda, _aagenda = V.aagenda;
+V.profile = () => _profile() + `<div class="title">Funciones extra</div>` + linkRows([["renew", "bank", "Renovar por transferencia", "CLABE y referencia, sin comisiones"], ["privates", "person", "Clases particulares", "Con el entrenador que elijas; se pagan aparte"], ["freeze", "snow", "Congelar paquete", "Pausa de 7 a 30 días por lesión o viaje"], ["checkin", "qr", "Hacer check-in", "Escanea el QR de la sede"], ["rate", "star", "Calificar la clase", "Anónima, en 10 segundos"]]);
+V.payments = () => _payments() + `<div class="title">Herramientas</div>` + linkRows([["transfers", "bank", "Cobros por transferencia", "1 por confirmar · congelamientos · particulares"], ["cash", "pay", "Corte de caja", "Efectivo y transferencias del día"], ["coachpay", "user", "Pago a entrenadores", "Semana, quincena o mes"], ["pricing", "tune", "Precios y promociones", "Por sede, especiales y códigos"], ["ratings", "star", "Calificaciones", "Promedios y comentarios"], ["export", "file", "Exportar a Excel", "Alumnos, pagos, asistencias, cortes"]]);
+V.settings = () => _settings() + `<div class="title">Funciones extra</div><div class="card"><p class="meta" style="margin:0 0 8px">Vienen encendidas. Si apagas una, se oculta su pantalla y su parte en el servidor deja de funcionar.</p>
+  ${[["Reglamento al registrarse"], ["Check-in con QR"], ["Agregar al calendario"], ["Congelar paquete"], ["Clases particulares"], ["Calificar la clase"], ["Renovar por transferencia"], ["Cobros por transferencia"], ["Cierre por lluvia"], ["Pago a entrenadores"], ["Corte de caja"], ["Promociones y precios"], ["Calificaciones"], ["Exportar a Excel"]].map(([n]) => `<div class="row" style="padding:6px 0"><span style="flex:1">${n}</span><button class="sw" role="switch" aria-checked="true" data-sw aria-label="${n}"></button></div>`).join("")}</div>
+  <div class="title">Datos bancarios</div><div class="card"><div class="row"><span style="color:var(--text-muted)">${ic("bank", 22)}</span><div style="flex:1;margin-left:12px"><b>ACADEMIA EJEMPLO — NO DEPOSITAR</b><div class="meta">Banco de Ejemplo · CLABE ••••0000</div></div><button class="icon-btn" aria-label="Editar datos bancarios">${ic("edit", 20)}</button></div></div>
+  <div class="title">Reglamento</div><div class="card"><b>Reglamento y deslinde de responsabilidad</b><div class="meta">Versión 2 · publicada el 28 oct 2026 · 27 alumnos la aceptaron</div><div style="margin-top:12px"><button class="btn secondary small">Editar y publicar versión nueva</button></div></div>`;
+if (_agenda) V.agenda = () => _agenda() + `<div class="title">Herramientas</div>` + linkRows([["qr", "qr", "QR del día", "Para el check-in de los alumnos"], ["cprivates", "person", "Particulares", "Precio, horarios y solicitudes"], ["cratings", "star", "Calificaciones", "Promedio del mes cerrado"]]);
+if (_aagenda) V.aagenda = () => _aagenda() + `<div style="margin-top:16px"><button class="btn secondary" data-go="rain">${ic("rain", 20)} Cierre por lluvia</button></div>`;
+
+// ---------- Interacción ----------
+const _render = render;
+render = function () {
+  _render();
+  if (R2_SUB.includes(S.screen)) $("#tabbar").hidden = true;
+};
+document.addEventListener("click", e => {
+  const t = e.target.closest("button, [data-go]");
+  if (!t) return;
+  if (t.matches("[data-renew]")) {
+    e.stopImmediatePropagation();
+    return sheet(`<h3 class="title" style="margin:0 0 8px">Renovar paquete</h3><p class="sub">Tu paquete actual conserva su saldo y vencimiento. El nuevo vale un mes desde que se confirme el pago.</p>
+      <p style="font:600 14px var(--ui);margin:20px 0 8px">Forma de pago</p><div class="seg"><button aria-pressed="true">Transferencia</button><button>Efectivo</button></div>
+      <div class="notice b-info" style="margin-top:16px">Transfiere por SPEI sin comisiones con una referencia; sube tu comprobante y lo confirmamos.</div>
+      <div style="margin-top:20px"><button class="btn primary" data-go="renew">Ver datos para transferir</button></div>`);
+  }
+  if (t.dataset.star) { e.stopImmediatePropagation(); S.stars = +t.dataset.star; return render(); }
+  if (t.matches("[data-pick]")) { e.stopImmediatePropagation(); t.setAttribute("aria-pressed", t.getAttribute("aria-pressed") !== "true"); return; }
+  if (t.dataset.fd) { e.stopImmediatePropagation(); S.fd = +t.dataset.fd; return render(); }
+  if (t.matches("[data-accept]")) { e.stopImmediatePropagation(); S.accept = !S.accept; return render(); }
+  if (t.dataset.rstep) { S.rstep = +t.dataset.rstep; if (!t.dataset.toast) { e.stopImmediatePropagation(); render(); $("#view").scrollTop = 0; return; } setTimeout(render); }
+  if (t.dataset.copy) { try { navigator.clipboard.writeText(t.dataset.copy); } catch (_) { /* sin portapapeles */ } }
+  if (t.dataset.go && t.dataset.toast) { setTimeout(() => toast(t.dataset.toast)); }
+}, true);
+
 render();
 </script>
