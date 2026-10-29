@@ -4,7 +4,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Academia Navarro · Prototipo</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:ital,wght@1,800;1,900&display=swap">
@@ -206,6 +205,16 @@ button:focus-visible, .tap:focus-visible { outline: 2px solid var(--accent-text)
 .sw[aria-checked="true"] { background: var(--brand-blue); }
 .sw[aria-checked="true"]::after { transform: translateX(20px); background: #fff; }
 .divider { height: 1px; background: var(--line); margin: 10px 0; }
+.hero { position: relative; overflow: hidden; display: block; width: 100%; text-align: left; border: 0; cursor: pointer; background: var(--brand-blue); color: #fff; border-radius: 28px; padding: 20px; box-shadow: var(--shadow-primary); animation: heroIn 400ms cubic-bezier(.23,1,.32,1) both; }
+.hero:active { transform: scale(.985); }
+.hero .arc { position: absolute; right: -60px; top: -50px; width: 220px; height: 220px; }
+.avs { display: inline-flex; }
+.avs i { width: 32px; height: 32px; margin-left: -8px; border-radius: 50%; background: #fff; color: var(--brand-blue); border: 2px solid var(--brand-blue); display: grid; place-items: center; font: 600 12px var(--ui); font-style: normal; }
+.avs i:first-child { margin-left: 0; }
+.qa { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 999px; border: 0; background: var(--selected); color: var(--accent-text); font: 600 14px var(--ui); cursor: pointer; }
+.pulse { animation: pulse 1.2s cubic-bezier(.77,0,.175,1) infinite alternate; }
+@keyframes heroIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes pulse { to { transform: scale(1.18); } }
 .chip { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font: 600 14px var(--ui); cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--brand-blue); border-color: var(--brand-blue); color: #fff; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -313,7 +322,7 @@ const STUDENTS = [["Ana López", "i", 6, 9, ""], ["Andrés Campos", "p", 8, 0, "
 // ---------- Estado ----------
 const S = { role: "alumno", screen: "home", day: 0, site: "valle", tab: "prox", sel: null, booked: false, attend: {}, ev: 0, evSel: {}, funnel: "nueva", aud: "todos", fixedOn: true };
 const SCREENS = {
-  alumno: [["home", "Inicio"], ["book", "Reservar"], ["slot", "Detalle del turno"], ["classes", "Mis clases"], ["profile", "Perfil"], ["progress", "Mi progreso"], ["fixed", "Horario fijo"], ["referral", "Invita y gana"], ["login", "Inicio de sesión"]],
+  alumno: [["home", "Inicio (nuevo)"], ["book", "Reservar"], ["slot", "Detalle del turno"], ["classes", "Mis clases"], ["profile", "Perfil"], ["progress", "Mi progreso"], ["fixed", "Horario fijo"], ["referral", "Invita y gana"], ["login", "Inicio de sesión"]],
   coach: [["agenda", "Agenda del día"], ["session", "Turno, plan y evaluación"], ["evaluate", "Evaluar alumnos"], ["templates", "Plantillas de ejercicios"]],
   admin: [["aagenda", "Agenda visual"], ["summary", "Resumen del negocio"], ["students", "Alumnos"], ["ficha", "Ficha de alumno"], ["trials", "Clases de prueba"], ["campaigns", "Avisos y campañas"], ["payments", "Pagos pendientes"], ["settings", "Ajustes"]],
 };
@@ -364,24 +373,48 @@ V.login = () => `<div style="padding-top:40px;text-align:center"><img src="${isD
     <button class="btn tertiary" style="justify-content:flex-end">Olvidé mi contraseña</button>
     <button class="btn primary" data-go="home">Entrar</button></div>`;
 
-V.home = () => `<div class="row" style="margin-top:12px"><div style="flex:1"><h1 class="display">Hola, Ana</h1><p class="sub">Nivel intermedio</p></div>
-    <button class="icon-btn" aria-label="Avisos, 2 sin leer">${ic("bell", 22)}<span class="dot-badge">2</span></button></div>
-  <div style="margin-top:20px" class="pkg">
-    <img class="wm" src="${ISO_BLANCO}" alt="">
-    <div class="row"><h3>Paquete de 4 clases</h3><span class="pill" style="color:#1C6B2E">${ic("check", 16)} Vigente</span></div>
-    <div class="row" style="margin-top:16px;gap:20px">${ring(124, [[1, "var(--ring-used)"], [2, "#fff"], [1, "var(--brand-green)"]], 4, "rgba(255,255,255,.10)", `<div><b>1</b><span>disponible</span></div>`)}
-      <div class="legend"><div><i style="background:var(--brand-green)"></i>Disponibles<b>1</b></div><div><i style="background:#fff"></i>Reservadas<b>2</b></div><div><i style="background:var(--ring-used)"></i>Usadas<b>1</b></div></div></div>
-    <hr><div class="dates"><div><small>ACTIVADO</small><b>4 oct 2026</b></div><div><small>VENCE</small><b>4 nov 2026</b><em>Faltan 7 días</em></div></div>
-  </div>
-  <p class="meta" style="margin:8px 0 0">+ 8 clases en otro paquete (se usan cuando este se acabe o venza).</p>
-  <div class="card" style="margin-top:16px"><div class="row"><span style="width:40px;height:40px;border-radius:50%;background:#E5F5D8;color:#0B1020;display:grid;place-items:center">${ic("ball", 20)}</span>
+// Inicio «Tu próxima clase» (DESIGN.md §13). S.hs = estado de ejemplo.
+const HOME_STATES = [["clase", "Con clase"], ["sinclases", "Sin clases"], ["vence", "Por vencer"], ["sinpaquete", "Sin paquete"], ["invitacion", "Invitación"], ["nuevo", "Primer uso"]];
+const pkgLine = () => `<button class="row" data-pkg style="gap:8px;min-height:44px;background:none;border:0;padding:0;color:var(--text-muted);font:600 14px var(--ui);cursor:pointer"><span style="width:10px;height:10px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 1.5px var(--green-edge)"></span>9 clases · vence 27 nov ${ic("chev", 16)}</button>`;
+const alertCard = (title, body, tone, icon, btn = true) => `<div class="row" role="status" style="margin-top:12px;padding:16px;border-radius:20px;background:var(--${tone}-bg);gap:12px;align-items:center"><span style="color:var(--${tone}-fg)">${ic(icon, 24)}</span><div style="flex:1"><b style="font:600 16px var(--ui)">${title}</b><div class="meta" style="margin:0">${body}</div></div>${btn ? `<button class="btn primary small inline" data-renew>Renovar</button>` : ""}</div>`;
+const ball = (n = 14, pulse = false) => `<span class="${pulse ? "pulse" : ""}" style="display:inline-block;flex:none;width:${n}px;height:${n}px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 1.5px var(--green-edge)"></span>`;
+const hero = () => `<button data-class class="hero" aria-label="Tu próxima clase: hoy a las 4:00 p. m., Valle Padel Park, Cancha 1, 90 minutos. Empieza en 3 h 20 min. Con Karla, Fernando y 1 más. Ver detalle">
+  <svg class="arc" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="12" stroke-dasharray="190 70" stroke-linecap="round"/></svg>
+  <small style="font:700 12px var(--ui);letter-spacing:.6px;opacity:.82">TU PRÓXIMA CLASE</small>
+  <div style="font:italic 800 24px/30px var(--display);margin-top:8px">Hoy</div>
+  <div class="num" style="font:italic 900 56px/1 var(--display)">4:00 p. m.</div>
+  <div style="font:600 14px var(--ui);opacity:.82;margin-top:4px">hasta 5:30 p. m.</div>
+  <span class="row" style="display:inline-flex;margin-top:12px;gap:8px;background:#fff;color:var(--brand-blue);border-radius:999px;padding:6px 12px 6px 8px;font:600 14px var(--ui)">${ball(14, true)}Empieza en 3 h 20 min</span>
+  <div style="font:600 16px var(--ui);margin-top:16px">Valle Padel Park · Cancha 1 · 90 min</div>
+  <div class="row" style="margin-top:12px;gap:8px"><span class="avs">${["K", "F", "+1"].map(x => `<i>${x}</i>`).join("")}</span><span style="font:600 14px var(--ui);opacity:.82">Con Karla, Fernando y 1 más</span></div>
+</button>`;
+const quick = () => `<div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="qa" data-toast="Abrimos Valle Padel Park en Maps.">${ic("send", 18)} Cómo llegar</button><button class="qa" data-invite>${ic("person", 18)} Invitar</button></div>`;
+const later = () => `<div class="title">Después <button class="btn tertiary small inline" data-go="classes">Ver todas</button></div>
+  <div class="card" style="padding:4px 16px">${[["jue 29 oct", "8:30 a. m. · Stanley"], ["lun 2 nov", "5:30 p. m. · Valle"]].map(([d, t], i) => `${i ? '<div class="divider"></div>' : ""}<div class="row tap" tabindex="0" data-class style="padding:10px 0"><span class="meta" style="width:88px;margin:0">${d}</span><b style="flex:1">${t}</b><span class="chev">${ic("chev", 20)}</span></div>`).join("")}</div>`;
+const inviteCard = () => `<div class="card" style="margin-top:16px"><div class="row"><span style="width:40px;height:40px;border-radius:50%;background:#E5F5D8;color:#0B1020;display:grid;place-items:center">${ic("ball", 20)}</span>
     <b style="font:700 18px var(--ui);flex:1">Carla Ruiz te invitó a entrenar</b></div>
     <p class="sub" style="margin-top:8px">Stanley Padel Club · Jueves 29 de octubre · 8:30 a. m.</p>
     <p class="meta" style="margin:4px 0 16px">Aceptar reserva tu lugar si tienes saldo y aún hay cupo.</p>
-    <div class="row"><button class="btn go small" data-toast="¡Listo! Reservaste la clase con Carla.">Aceptar y reservar</button><button class="btn tertiary small inline">Ahora no</button></div></div>
-  <div class="title">Tu próxima clase <button class="btn tertiary small inline" data-go="classes">Ver todas</button></div>
-  ${classCard("Hoy", 28, "16:00", 60, "Valle Padel Park · Cancha 1 · 60 min", true)}
-  <div style="margin-top:24px"><button class="btn primary" data-go="book">${ic("plus", 20)} Reservar otra clase</button></div>`;
+    <div class="row"><button class="btn go small" data-toast="¡Listo! Reservaste la clase con Carla.">Aceptar y reservar</button><button class="btn tertiary small inline">Ahora no</button></div></div>`;
+const noClass = canBook => `<div class="card" style="margin-top:16px;border-radius:28px;padding:20px">${`<span style="display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 2px var(--green-edge);color:#0B1020">${ic("ball", 22)}</span>`}
+    <div style="font:italic 800 24px/30px var(--display);margin-top:12px">¿Cuándo juegas esta semana?</div>
+    <p class="sub" style="margin-top:4px">${canBook ? "No tienes clases reservadas. Elige día y horario y te armamos la cancha." : "Cuando renueves tu paquete podrás reservar aquí mismo."}</p>
+    <button class="btn ${canBook ? "primary" : "secondary"}" style="margin-top:16px" data-go="book">${ic(canBook ? "plus" : "cal", 20)} ${canBook ? "Reservar clase" : "Ver horarios"}</button></div>
+  ${canBook ? `<div class="title">Lugares en tus horarios</div>${[["vie 30 oct · 4:00 p. m.", "Valle Padel Park · quedan 3 lugares"], ["mar 3 nov · 4:00 p. m.", "Valle Padel Park · quedan 5 lugares"]].map(([a, b]) => `<div class="card tap" tabindex="0" data-go="slot" style="margin-bottom:8px;padding:12px 16px"><div class="row">${ball(10)}<div style="flex:1"><b>${a}</b><div class="meta" style="margin:0">${b}</div></div><b style="color:var(--accent-text);font:600 14px var(--ui)">Reservar</b><span class="chev" style="color:var(--accent-text)">${ic("chev", 20)}</span></div></div>`).join("")}` : ""}`;
+const welcome = () => `<div class="card" style="margin-top:16px;border-radius:28px;padding:20px"><div class="row"><span style="display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 2px var(--green-edge);color:#0B1020">${ic("ball", 20)}</span><div style="font:italic 800 24px/30px var(--display)">Te damos la bienvenida</div></div>
+  <p class="sub" style="margin-top:8px">En tres pasos ya estás entrenando:</p>
+  ${[["Activa tu paquete", "Paga en la academia o pide tu renovación aquí."], ["Elige día y horario", "En cualquiera de las dos sedes."], ["Llega y juega", "Te armamos la cancha con gente de tu nivel."]].map(([a, b], i) => `<div class="row" style="align-items:flex-start;margin-top:12px"><span style="width:28px;height:28px;flex:none;border-radius:50%;background:var(--selected);color:var(--accent-text);display:grid;place-items:center;font:700 13px var(--ui)">${i + 1}</span><div><b>${a}</b><div class="meta" style="margin:0">${b}</div></div></div>`).join("")}
+  <button class="btn primary" style="margin-top:20px" data-renew>${ic("pay", 20)} Activar mi paquete</button></div>`;
+
+V.home = () => { const st = S.hs || "clase";
+  const withClass = ["clase", "vence", "invitacion"].includes(st);
+  return `<div class="row" style="margin-top:12px;align-items:flex-start"><div style="flex:1"><h1 class="display">Hola, Ana</h1>${["clase", "sinclases", "invitacion"].includes(st) ? pkgLine() : ""}</div>
+    <button class="icon-btn" aria-label="Avisos${st === "nuevo" ? "" : ", 2 sin leer"}">${ic("bell", 22)}${st === "nuevo" ? "" : '<span class="dot-badge">2</span>'}</button></div>
+  ${st === "vence" ? alertCard("Tu paquete vence en 4 días", "Te quedan 3 clases. Úsalas o renueva a tiempo.", "pend", "timer") : ""}
+  ${st === "sinpaquete" ? alertCard("No tienes clases disponibles", "Renueva tu paquete para volver a la cancha.", "exp", "pay") : ""}
+  ${st === "nuevo" ? welcome() : withClass ? `<div style="margin-top:16px">${hero()}</div>${quick()}${st === "invitacion" ? inviteCard() : ""}${later()}<div style="margin-top:24px"><button class="btn secondary" data-go="book">${ic("plus", 20)} Reservar otra clase</button></div>` : noClass(st === "sinclases")}
+  <div class="title" style="margin-top:28px;font:600 13px var(--ui);color:var(--text-subtle)">Ver otros estados del Inicio</div>
+  <div class="chips">${HOME_STATES.map(([k, n]) => `<button class="chip" data-hs="${k}" aria-pressed="${st === k}">${n}</button>`).join("")}</div>`; };
 
 function classCard(dn, d, start, min, metaTxt, hl, status = ["b-info", "Reservada"]) {
   return `<div class="card tap ${hl ? "sel" : ""}" tabindex="0" data-class><div class="row">
@@ -641,6 +674,9 @@ document.addEventListener("click", e => {
   if (t.matches("[data-fixed]")) { S.fixedOn = !S.fixedOn; render(); return toast(S.fixedOn ? "Horario fijo activado." : "Horario fijo en pausa."); }
   if (t.dataset.stroke) { const a = S.evSel[S.ev] ?? []; const x = t.dataset.stroke; S.evSel[S.ev] = a.includes(x) ? a.filter(y => y !== x) : [...a, x]; return render(); }
   if (t.dataset.ev) { if (t.dataset.ev === "save") { S.ev = 0; S.evSel = {}; go("session"); return toast("4 evaluaciones guardadas."); } S.ev += +t.dataset.ev; return render(); }
+  if (t.dataset.hs) { S.hs = t.dataset.hs; return render(); }
+  if (t.matches("[data-pkg]")) return sheet(`<h3 class="title" style="margin:0 0 12px">Tus paquetes</h3><div class="stack">${pkgRow(8, 0, 0, 8, "Vence 27 nov 2026 · 0 usadas · 0 reservadas", "b-paid", "Vigente", true)}${pkgRow(4, 1, 2, 1, "Vence 4 nov 2026 · 1 usada · 2 reservadas", "b-paid", "Vigente", true)}</div>
+      <p class="meta">Se usa primero el que vence antes.</p><div style="margin-top:16px"><button class="btn secondary" data-renew>Renovar paquete</button></div>`);
   if (t.dataset.funnel) { S.funnel = t.dataset.funnel; return render(); }
   if (t.dataset.aud) { S.aud = t.dataset.aud; return render(); }
   if (t.dataset.trial) { const n = t.dataset.trial; const st = S.funnel; return sheet(`<h3 class="title" style="margin:0 0 8px">${esc(n)}</h3><p class="sub">Prospecto · ${({ nueva: "Nueva", agendada: "Agendada", vino: "Vino", compro: "Compró" })[st]}</p>
