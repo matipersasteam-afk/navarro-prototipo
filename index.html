@@ -3,10 +3,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Academia Navarro · Prototipo</title>
+<title>Navarro Academy · Vista previa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:ital,wght@1,800;1,900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Nunito:ital,wght@1,800;1,900&display=swap">
 <style>
 /* Layout: panel de control a la izquierda + teléfono 390 px con la app; en móvil, el teléfono ocupa el ancho. */
 :root {
@@ -21,7 +21,7 @@
   --shadow-raised: 0 2px 4px rgba(11,16,32,.06), 0 16px 40px -12px rgba(11,16,32,.18);
   --shadow-primary: 0 10px 24px -10px rgba(0,36,249,.45);
   --display: "Nunito", "Varela Round", system-ui, sans-serif;
-  --ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ui: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0B0E17; --surface: #121626; --surface-alt: #1A1F33; --line: #2A3048; --court-line: #3D4668;
@@ -245,6 +245,50 @@ button:focus-visible, .tap:focus-visible { outline: 2px solid var(--accent-text)
 .drill i:nth-child(even) { background: var(--ring-used); }
 .newtag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px; background: var(--brand-green); color: var(--on-green); font: 700 10px var(--ui); vertical-align: 2px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; } }
+
+/* ===== Dirección «Azul Navarro» (DESIGN.md, 29 oct 2026) ===== */
+:root { --bg: #F3F5FB; --surface-alt: #E9EDF6; --line-strong: #737B98;
+  --shadow-primary: 0 10px 22px -12px rgba(11,16,32,.35);
+  --shadow-hero: 0 2px 4px rgba(11,16,32,.06), 0 18px 40px -16px rgba(11,16,32,.28); }
+:root[data-theme="dark"] { --line-strong: #6A7396; --shadow-hero: none; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --line-strong: #6A7396; --shadow-hero: none; } }
+.btn.primary { background: var(--brand-green); color: var(--on-green); }
+.btn.go { background: var(--brand-blue); color: #fff; }
+.display { font-size: 26px; line-height: 30px; }
+.title { font: italic 900 16px/1.3 var(--display); margin: 24px 0 12px; }
+.day { border-color: var(--line-strong); }
+.day b { font-size: 16px; }
+.qa { background: transparent; }
+/* Banda azul a todo lo ancho: entra bajo la barra de estado y cierra en curva */
+.tabbar { z-index: 4; }
+.band { position: relative; overflow: hidden; background: var(--brand-blue); color: #fff; margin: -4px -20px 20px; padding: 6px 20px 22px; border-radius: 0 0 24px 24px; }
+.band > .arcs { position: absolute; right: -56px; top: -34px; width: 210px; height: 210px; pointer-events: none; }
+.band > :not(.arcs) { position: relative; }
+.band .display, .band h1, .band h2, .band b, .band .title { color: #fff !important; }
+.band .sub, .band .meta, .band small { color: rgba(255,255,255,.88) !important; }
+.band .icon-btn { background: transparent; border: 0; color: #fff; }
+.band .topbar { padding-top: 0; }
+.band .topbar h2 { text-align: left; }
+.band .seg { background: rgba(255,255,255,.12); }
+.band .seg button { color: #fff; }
+.band .seg button[aria-pressed="true"] { background: #fff; color: var(--brand-blue); }
+.band .day { background: rgba(255,255,255,.12); border: 0; color: #fff; }
+.band .day[aria-pressed="true"] { background: #fff; color: var(--brand-blue); }
+.band .day[aria-pressed="true"] small, .band .day[aria-pressed="true"] b, .band .seg button[aria-pressed="true"] b { color: var(--brand-blue) !important; }
+.band [data-pkg] { color: #fff !important; }
+.pkg-n { font: italic 900 26px/1 var(--display); }
+.band [data-pkg] > span:first-child { display: none; }
+.band [data-pkg] { font-size: 16px !important; }
+.band .band-logo { display: block; width: 132px; margin: 4px 0 6px; }
+.band.lift { padding-bottom: 76px; }
+.lifted { position: relative; z-index: 1; margin-top: -76px !important; }
+.screen.banded .status { background: var(--brand-blue); color: #fff; }
+/* La tarjeta de tu próxima clase: blanca, montada sobre la banda */
+.hero { background: var(--surface); color: var(--text); box-shadow: var(--shadow-hero); }
+.hero .arc, .hero > small { display: none; }
+.hero .num { color: var(--accent-text); font-size: 52px !important; }
+.hero > span.row { background: var(--paid-bg) !important; color: var(--paid-fg) !important; }
+:root[data-theme="dark"] .hero { border: 1px solid var(--line); }
 </style>
 
 <div class="wrap">
@@ -376,7 +420,7 @@ V.login = () => `<div style="padding-top:40px;text-align:center"><img src="${isD
 
 // Inicio «Tu próxima clase» (DESIGN.md §13). S.hs = estado de ejemplo.
 const HOME_STATES = [["clase", "Con clase"], ["sinclases", "Sin clases"], ["vence", "Por vencer"], ["sinpaquete", "Sin paquete"], ["invitacion", "Invitación"], ["nuevo", "Primer uso"]];
-const pkgLine = () => `<button class="row" data-pkg style="gap:8px;min-height:44px;background:none;border:0;padding:0;color:var(--text-muted);font:600 14px var(--ui);cursor:pointer"><span style="width:10px;height:10px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 1.5px var(--green-edge)"></span>9 clases · vence 27 nov ${ic("chev", 16)}</button>`;
+const pkgLine = () => `<button class="row" data-pkg style="gap:8px;min-height:44px;background:none;border:0;padding:0;color:var(--text-muted);font:600 14px var(--ui);cursor:pointer"><span style="width:10px;height:10px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 1.5px var(--green-edge)"></span><b class="pkg-n">9</b> clases · vence 27 nov ${ic("chev", 16)}</button>`;
 const alertCard = (title, body, tone, icon, btn = true) => `<div class="row" role="status" style="margin-top:12px;padding:16px;border-radius:20px;background:var(--${tone}-bg);gap:12px;align-items:center"><span style="color:var(--${tone}-fg)">${ic(icon, 24)}</span><div style="flex:1"><b style="font:600 16px var(--ui)">${title}</b><div class="meta" style="margin:0">${body}</div></div>${btn ? `<button class="btn primary small inline" data-renew>Renovar</button>` : ""}</div>`;
 const ball = (n = 14, pulse = false) => `<span class="${pulse ? "pulse" : ""}" style="display:inline-block;flex:none;width:${n}px;height:${n}px;border-radius:50%;background:var(--brand-green);box-shadow:inset 0 0 0 1.5px var(--green-edge)"></span>`;
 const hero = () => `<button data-class class="hero" aria-label="Tu próxima clase: hoy a las 4:00 p. m., Valle Padel Park, Cancha 1, 90 minutos. Empieza en 3 h 20 min. Con Karla, Fernando y 1 más. Ver detalle">
@@ -488,7 +532,7 @@ V.agenda = () => `<div class="row" style="margin-top:12px"><div style="flex:1"><
   <div class="seg" style="margin-top:16px">${[["valle", "Valle Padel Park"], ["stanley", "Stanley Padel Club"]].map(([k, n]) => `<button data-site="${k}" aria-pressed="${S.site === k}">${n}</button>`).join("")}</div>
   <div class="days" style="margin-top:20px">${DAYS.map(([n, d], i) => `<button class="day" data-day="${i}" aria-pressed="${S.day === i}"><small>${n}</small><b>${d}</b></button>`).join("")}</div>
   <div class="title">Miércoles 28 de octubre</div>
-  <div class="stack">${[["7:00", [2, 0], "2 alumnos · C1 60′", ["p"]], ["8:30", [4, 1], "5 alumnos · C1 90′ · C2 60′", ["i", "a"]], ["16:00", [2, 0], "2 alumnos · C1 60′", ["i"]], ["17:30", [4, 2], "6 alumnos · C1 90′ · C2 60′", ["i", "p"]], ["19:00", [4, 2], "6 alumnos · C1 90′ · C2 60′", "review"]].map(([t, c, txt, lv]) => `
+  <div class="stack">${[["7:00", [2, 0], "2 alumnos · C1 60 min", ["p"]], ["8:30", [4, 1], "5 alumnos · C1 90 min · C2 60 min", ["i", "a"]], ["16:00", [2, 0], "2 alumnos · C1 60 min", ["i"]], ["17:30", [4, 2], "6 alumnos · C1 90 min · C2 60 min", ["i", "p"]], ["19:00", [4, 2], "6 alumnos · C1 90 min · C2 60 min", "review"]].map(([t, c, txt, lv]) => `
     <div class="card tap" tabindex="0" data-go="session"><div class="row"><b class="num" style="width:86px;font:700 17px var(--ui)">${hh(t)}</b><div style="flex:1;min-width:0">${capDots(c)}<div class="meta" style="margin-top:6px;color:var(--text-muted);font-weight:600">${txt}</div></div>
     ${lv === "review" ? badge("b-pend", "Revisar") : lv.map(l => `<span class="level" style="padding:0 8px">${dots(l)}</span>`).join("")}<span class="chev">${ic("chev", 20)}</span></div></div>`).join("")}</div>
   <p class="meta" style="margin-top:16px">Toca un turno para ver los grupos por cancha, pasar asistencia y mover alumnos.</p>`;
@@ -507,7 +551,7 @@ V.aagenda = () => `<div class="row" style="margin-top:12px"><h1 class="display" 
   <div class="card" style="margin-top:20px"><div class="row">${ring(56, [[21, "var(--brand-blue)"]], 40, "var(--surface-alt)", `<b style="font:600 12px var(--ui);color:var(--text)">53%</b>`)}<div><b style="font:700 18px var(--ui)">Ocupación del día</b><div class="meta">21 de 40 lugares · 1 turno por revisar</div></div></div></div>
   <div class="grid-agenda" style="margin-top:16px"><span></span><span class="h">Cancha 1</span><span class="h">Cancha 2</span>
   ${[["07:00", ["Elena, Bruno", "p", 2, 60], null], ["08:30", ["Diego, Luis, Ximena, Teresa", "a", 4, 90], ["Fernando", "a", 1, 60]], ["16:00", ["Ana, Karla", "i", 2, 60], null], ["17:30", ["Ana, Karla, Fernando, Nicolás", "i", 4, 90], ["Elena, Bruno", "p", 2, 60]], ["19:00", ["Diego, Luis, Walter, Santiago", "a", 4, 90], ["Karla, César", "i", 2, 60]]].map(([t, a, b], k) =>
-    `<span class="tl">${t}${k === 4 ? `<span style="display:block;color:var(--pend-fg)">${ic("swap", 16)}</span>` : ""}</span>${[a, b].map(c => c ? `<div class="cell busy" data-go="session" tabindex="0"><div class="top">${c[2]}/4<span>${c[3]}′</span></div><div class="names">${c[0]}</div>${Array(c[2]).fill(dots(c[1], "s")).join(" ")}</div>` : `<div class="cell" data-go="session" tabindex="0"><div class="top">0/4</div></div>`).join("")}`).join("")}</div>`;
+    `<span class="tl">${t}${k === 4 ? `<span style="display:block;color:var(--pend-fg)">${ic("swap", 16)}</span>` : ""}</span>${[a, b].map(c => c ? `<div class="cell busy" data-go="session" tabindex="0"><div class="top">${c[2]}/4<span>${c[3]} min</span></div><div class="names">${c[0]}</div>${Array(c[2]).fill(dots(c[1], "s")).join(" ")}</div>` : `<div class="cell" data-go="session" tabindex="0"><div class="top">0/4</div></div>`).join("")}`).join("")}</div>`;
 
 V.students = () => `<h1 class="display" style="margin-top:12px">Alumnos</h1><p class="sub">30 registrados</p>
   <div class="row" style="margin-top:12px;gap:8px"><button class="btn secondary small" data-go="trials">${ic("person", 18)} Pruebas · 3</button><button class="btn secondary small" data-go="campaigns">${ic("mega", 18)} Avisos</button></div>
@@ -647,8 +691,36 @@ V.campaigns = () => `${topbar("Avisos", "students")}
 
 // ---------- Render ----------
 const isDark = () => document.documentElement.dataset.theme === "dark" || (!document.documentElement.dataset.theme && matchMedia("(prefers-color-scheme: dark)").matches);
+
+// Banda azul de marca: el encabezado de cada pantalla (atrás, título, subtítulo,
+// sede y días) va dentro de una banda a todo lo ancho, como en la app.
+const ARCS = `<svg class="arcs" viewBox="0 0 100 100" aria-hidden="true"><path d="M74 16A40 40 0 1 0 88 64" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="9" stroke-linecap="round"/><path d="M60 34A20 20 0 1 0 70 56" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="9" stroke-linecap="round"/></svg>`;
+function band() {
+  const v = $("#view"), scr = $("#screen");
+  scr.classList.remove("banded");
+  const h = v.querySelector("h1.display");
+  if (!h) return;
+  let top = h; while (top.parentElement !== v) top = top.parentElement;
+  const nodes = [], after = [];
+  for (let n = v.firstElementChild; n && n !== top; n = n.nextElementSibling) (n.classList.contains("xbanner") ? after : nodes).push(n);
+  nodes.push(top);
+  for (let f = top.nextElementSibling; f && (f.matches("p.sub, .seg, .days") || (f.matches(".title") && f.style.margin.startsWith("0"))); f = f.nextElementSibling) nodes.push(f);
+  const b = document.createElement("header");
+  b.className = "band"; b.innerHTML = ARCS;
+  v.insertBefore(b, v.firstElementChild);
+  nodes.forEach(x => b.appendChild(x));
+  b.after(...after);
+  b.querySelectorAll("img").forEach(i => { i.src = LOGO_BLANCO; i.style.width = "150px"; });
+  b.querySelectorAll('[style*="padding-top:40px"]').forEach(x => { x.style.paddingTop = "8px"; x.style.textAlign = "left"; });
+  b.querySelectorAll(".display").forEach(x => { x.style.marginTop = "8px"; });
+  if (["home", "agenda", "aagenda"].includes(S.screen)) b.insertAdjacentHTML("afterbegin", `<img class="band-logo" src="${LOGO_BLANCO}" alt="Navarro Academy">`);
+  const hero = b.nextElementSibling;
+  if (hero && hero.querySelector(":scope > .hero")) { b.classList.add("lift"); hero.classList.add("lifted"); }
+  scr.classList.add("banded");
+}
 function render() {
   $("#view").innerHTML = V[S.screen]();
+  band();
   const tabs = TABS[S.role];
   const active = tabs.find(t => t[0] === S.screen) ? S.screen : ({ slot: "book", ficha: "students", session: "aagenda", trials: "students", campaigns: "students", progress: "profile", fixed: "profile", referral: "profile" })[S.screen] ?? null;
   $("#tabbar").hidden = !tabs.length || ["login", "evaluate", "templates", "progress", "fixed", "referral", "trials", "campaigns"].includes(S.screen);
@@ -693,7 +765,7 @@ document.addEventListener("click", e => {
       <p style="font:600 14px var(--ui);margin:16px 0 8px">Hora</p><div class="chips">${SLOTS.map((x, i) => `<span class="chip" aria-pressed="${i === 4}">${hh(x.s)}</span>`).join("")}</div>
       <div style="margin-top:20px"><button class="btn primary" data-close-toast="Horario agregado: miércoles 7:00 p. m.">Agregar horario</button></div>`);
   if (t.dataset.plan) { const d = t.dataset.plan === "60" ? PLAN60 : PLAN90; return sheet(`<h3 class="title" style="margin:0 0 4px">Editar plan</h3><p class="meta" style="color:var(--paid-fg);margin:0 0 12px">${t.dataset.plan} de ${t.dataset.plan} min · listo</p>
-      ${d.map(([n, m], i) => `<div class="row" style="gap:8px;margin-bottom:8px"><input value="${n}" aria-label="Ejercicio ${i + 1}" style="flex:1;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 12px;font:400 15px var(--ui)"><span class="num" style="width:56px;text-align:center;font-weight:700">${m}′</span></div>`).join("")}
+      ${d.map(([n, m], i) => `<div class="row" style="gap:8px;margin-bottom:8px"><input value="${n}" aria-label="Ejercicio ${i + 1}" style="flex:1;min-width:0;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);padding:0 12px;font:400 15px var(--ui)"><span class="num" style="width:56px;text-align:center;font-weight:700">${m} min</span></div>`).join("")}
       <div class="stack" style="margin-top:12px"><button class="btn primary" data-close-toast="Plan guardado.">Guardar</button><button class="btn tertiary" data-close-toast="Plan de la plantilla restaurado.">Volver a la plantilla</button></div>`); }
   if (t.dataset.toast) return toast(t.dataset.toast);
   if (t.matches("[data-class]")) return sheet(`<h3 class="title" style="margin:0">Miércoles 28 de octubre</h3><p class="sub">4:00 p. m. · Valle Padel Park</p>
@@ -903,4 +975,10 @@ document.addEventListener("click", e => {
 }, true);
 
 render();
+// Enlaces directos: #role=admin&s=aagenda&theme=light
+(() => { const q = new URLSearchParams(location.hash.slice(1));
+  if (q.get("theme")) document.documentElement.dataset.theme = q.get("theme");
+  if (q.get("role")) S.role = q.get("role");
+  if (q.get("s") && V[q.get("s")]) S.screen = q.get("s");
+  if ([...q.keys()].length) render(); })();
 </script>
